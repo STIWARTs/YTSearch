@@ -51,6 +51,7 @@ ytsearch/
       transcript_scorer.py    Caption download and NLP scoring
       keyword_scorer.py       Keyword matching + channel whitelist
       scorer.py               Parallel orchestration + final ranking
+      cache.py                SQLite-backed asynchronous caching
     requirements.txt
     .env                      YOUTUBE_API_KEY (not committed)
   frontend/
@@ -276,6 +277,21 @@ All components are signed floats. The list is sorted descending. The top `max_re
 
 ---
 
+### `cache.py`
+
+An asynchronous SQLite-backed cache using `aiosqlite` to store fully scored search results (`SearchResponse` JSON blob).
+
+**Why it matters:** YouTube rate limits are strict. If a user searches for the same term multiple times, or if multiple users search for "Laws of Motion," hitting the YouTube API repeatedly wastes quota and delays the response. The cache prevents this.
+
+**Schema & Normalization:**
+- Table `search_cache` stores `query`, `response` (JSON), and `cached_at` (UNIX timestamp).
+- Queries are normalized (`stripped` and `casefolded`) before lookup, so "Laws of Motion" and " laws of motion " hit the same cache entry.
+
+**TTL (Time-to-Live):**
+Cached entries expire after 24 hours by default (configurable via `CACHE_TTL_HOURS`). If a lookup finds an expired entry, it deletes it and forces a fresh fetch.
+
+---
+
 ### `main.py`
 
 The FastAPI application. Two routes:
@@ -373,7 +389,9 @@ The entire UI in a single client component. Key sections:
 1. User types "laws of motion" and clicks Search
 2. page.tsx calls searchVideos("laws of motion", 20) from lib/api.ts
 3. api.ts fetches GET http://localhost:8000/search?q=laws%20of%20motion&max_results=20
-4. main.py receives request, checks API key is set
+4. main.py receives request and checks cache for "laws of motion"
+     - If Cache Hit: Instantly returns cached SearchResponse JSON (skip to step 10)
+     - If Cache Miss: Proceeds to check API key
 5. query_expander.py returns 7 query strings
 6. youtube_client.py loops over queries:
      - GET /search (100 units each) -> video IDs
@@ -383,7 +401,7 @@ The entire UI in a single client component. Key sections:
      - Each thread runs keyword, channel, face, transcript scoring
      - asyncio.gather() waits for all threads
 8. Results sorted by score descending, top 20 taken
-9. SearchResponse JSON returned to browser
+9. Result is persisted to SQLite cache asynchronously, then SearchResponse JSON returned to browser
 10. page.tsx updates state, React re-renders
 11. Video cards appear with scores and breakdown
 ```
@@ -451,13 +469,13 @@ npm run dev
 | Variable | Location | Description |
 |---|---|---|
 | `YOUTUBE_API_KEY` | `backend/.env` | YouTube Data API v3 key |
+| `CACHE_TTL_HOURS` | `backend/.env` | Hours until cached search results expire (default: 24) |
 | `NEXT_PUBLIC_API_URL` | `frontend/.env.local` | Backend base URL (default: http://localhost:8000) |
 
 ---
 
 ## What Is Not Built Yet (Planned)
 
-- **SQLite caching** — cache scored results by query so repeat searches do not cost quota
 - **Sentence Transformers semantic search** — `all-MiniLM-L6-v2` model to understand synonyms without exact keyword matches (e.g., searching "inertia" also matches "Newton's first law")
 - **User feedback loop** — thumbs up/down on results to refine the channel whitelist and keyword weights
 - **Quota budget tracking** — persist daily usage count and warn the user before they hit the limit
