@@ -9,6 +9,7 @@ from __future__ import annotations
 VISUAL_SUFFIXES = [
     "animation",
     "simulation",
+    "manim",
     "visual explanation",
     "3d visualization",
     "motion graphics",

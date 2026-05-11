@@ -20,21 +20,21 @@ ANIMATION_SIGNALS = [
     "particle",
     "animate",
     "model",
-    "trajectory",
-    "wave",
-    "oscillate",
-    "vector",
+    # "trajectory",
+    # "wave",
+    # "oscillate",
+    # "vector",
 ]
 
 LECTURE_SIGNALS = [
-    "hello students",
-    "welcome to class",
-    "take your notebook",
-    "subscribe",
-    "today we will learn",
+    # "hello students",
+    # "welcome to class",
+    # "take your notebook",
+    # "subscribe",
+    # "today we will learn",
     "write this down",
     "in this lecture",
-    "in this chapter",
+    # "in this chapter",
 ]
 
 
