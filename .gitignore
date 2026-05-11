@@ -1,3 +1,8 @@
+frontend/.next
+frontend/node_modules
+frontend/.env.local
 frontend/AGENTS.md
 frontend/CLAUDE.md
 backend/.env
+backend/.venv
+backend/app/__pycache__
