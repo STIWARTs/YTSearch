@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, FormEvent } from "react";
+import { useState, useRef, FormEvent, Fragment } from "react";
 import { Search, Play, AlertCircle, Zap, Eye, TrendingUp } from "lucide-react";
 import { searchVideos, SearchResponse, VideoResult } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -61,10 +61,10 @@ function ScoreBreakdown({ breakdown }: { breakdown: Record<string, string | numb
       <summary>Score breakdown</summary>
       <div className="breakdown-table">
         {keys.map((k) => (
-          <>
-            <span key={`k-${k}`} className="breakdown-key">{k}</span>
-            <span key={`v-${k}`} className="breakdown-val">{String(breakdown[k])}</span>
-          </>
+          <Fragment key={k}>
+            <span className="breakdown-key">{k}</span>
+            <span className="breakdown-val">{String(breakdown[k])}</span>
+          </Fragment>
         ))}
       </div>
     </details>
