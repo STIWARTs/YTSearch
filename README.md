@@ -1,5 +1,10 @@
 # YTSearch — Educational Animation Finder
 
+<p align="center">
+  <img src="s1.png" width="48%" />
+  <img src="s2.png" width="48%" />
+</p>
+
 Finds and ranks YouTube videos that are genuine educational animations or simulations,
 filtering out lecture/facecam content automatically.
 
